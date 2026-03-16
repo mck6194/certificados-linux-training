@@ -257,6 +257,25 @@ Laboratorios asociados:
 
 ---
 
+## 14 — Certificados en Kubernetes, OpenShift y cert-manager
+
+Uso de certificados en entornos de orquestación de contenedores.
+
+Contenidos:
+
+* Secrets de Kubernetes para certificados y claves
+* Ingress con TLS
+* cert-manager: Certificate, Issuer y ClusterIssuer; renovación automática
+* OpenShift: Rutas con TLS (edge, passthrough, reencryption)
+* CA de confianza e inyección de certificados en el clúster
+* service serving certificates en OpenShift (concepto).
+
+Laboratorios asociados:
+
+* **Lab14 — Kubernetes, OpenShift y cert-manager**
+
+---
+
 # Metodología
 
 El curso sigue una metodología basada en **aprendizaje práctico**.

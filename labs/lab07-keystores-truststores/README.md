@@ -103,6 +103,7 @@ Este laboratorio contiene los siguientes ejercicios:
 01-truststore-linux.md
 02-keystore-java.md
 03-nss-database.md
+04-uso-certs-en-apps-java.md
 ```
 
 Cada ejercicio explora un tipo diferente de almacén de certificados.

@@ -84,7 +84,8 @@ labs/
  ├── lab10-automatizacion
  ├── lab11-diagnostico-tls
  ├── lab12-solaris
- └── lab13-buenas-practicas
+ ├── lab13-buenas-practicas
+ └── lab14-kubernetes-openshift-certificados
 ```
 
 Cada laboratorio contiene uno o varios **micro-laboratorios** que introducen nuevos conceptos y ejercicios prácticos.
@@ -108,7 +109,8 @@ La secuencia de laboratorios sigue una progresión lógica:
 11. Automatizar la gestión de certificados
 12. Diagnosticar problemas TLS
 13. Comprender el modelo criptográfico en Solaris
-14. Aplicar buenas prácticas y rotación automatizada de certificados.
+14. Aplicar buenas prácticas y rotación automatizada de certificados
+15. Gestionar certificados en Kubernetes, OpenShift y cert-manager.
 
 Cada laboratorio se apoya en los anteriores, construyendo progresivamente una comprensión completa de la gestión de certificados.
 
