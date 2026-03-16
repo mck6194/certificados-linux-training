@@ -91,44 +91,37 @@ Esto demuestra que incluso pequeñas diferencias producen un identificador cript
 
 ---
 
-### Paso 5 — Probar el certificado en un servicio real utilizando Docker
+### Paso 5 — Probar el certificado en un servicio simple con OpenSSL
 
-Vamos a utilizar Docker para iniciar un servidor web sencillo que utilice el certificado generado.
+Para cerrar el laboratorio vamos a utilizar el certificado generado en un **servidor TLS muy sencillo** proporcionado por OpenSSL.
 
-Primero crea un directorio para el servidor.
-
-```bash
-mkdir web-test
-cd web-test
-```
-
-Crea un archivo HTML simple.
+En una terminal, sitúate en el directorio donde tienes `rsa-private.key` y `server.crt` y ejecuta:
 
 ```bash
-echo "Servidor TLS de prueba" > index.html
+openssl s_server -key rsa-private.key -cert server.crt -accept 8443 -www
 ```
 
-Inicia un contenedor NGINX utilizando el certificado que generaste.
+Este comando:
 
-```bash
-docker run -d \
--p 8443:443 \
--v $(pwd):/usr/share/nginx/html \
--v ~/pki-labs/server.crt:/etc/nginx/server.crt \
--v ~/pki-labs/rsa-private.key:/etc/nginx/server.key \
-nginx
-```
+* abre un socket TLS en el puerto `8443`
+* utiliza tu clave privada y certificado
+* responde con una página simple cuando un cliente se conecta.
 
-Ahora intenta conectarte al servicio desde el entorno Codespace.
+Deja ese comando ejecutándose.
+
+En otra terminal, prueba la conexión desde el mismo sistema:
 
 ```bash
 curl -k https://localhost:8443
 ```
 
-El parámetro `-k` permite a curl aceptar certificados no confiables.
+El parámetro `-k` permite a `curl` aceptar certificados no confiables (como nuestro certificado autofirmado).
 
-Esto demuestra cómo un certificado puede utilizarse para proteger un servicio TLS aunque no esté firmado por una autoridad reconocida.
+Deberías ver una respuesta HTML generada por `openssl s_server`, lo que demuestra que:
+
+* el servidor presenta el certificado `server.crt`
+* el cliente es capaz de establecer una conexión TLS aunque el certificado no sea de una CA reconocida.
 
 ---
 
-En este ejercicio hemos utilizado OpenSSL para verificar certificados, comparar huellas digitales y comprobar cómo un certificado puede emplearse para proteger un servicio real.
+En este ejercicio hemos utilizado OpenSSL para verificar certificados, comparar huellas digitales y comprobar cómo un certificado puede emplearse para proteger una conexión TLS sencilla.
