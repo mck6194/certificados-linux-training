@@ -39,7 +39,11 @@ Cada certificado emitido por una CA tiene un número de serie único.
 
 ---
 
-### Paso 2 — Revocar el certificado utilizando la CA
+### Paso 2 — Revocar el certificado utilizando la CA intermedia
+
+El certificado del servidor fue firmado por la **CA intermedia**, por lo que
+la revocación debe hacerse con la configuración de la intermedia
+(no con la de la raíz).
 
 Sitúate en el directorio de la autoridad certificadora.
 
@@ -47,47 +51,54 @@ Sitúate en el directorio de la autoridad certificadora.
 cd ~/pki-ca
 ```
 
-Revoca el certificado utilizando OpenSSL.
+Revoca el certificado utilizando la CA intermedia.
 
 ```bash id="5v9g7t"
 openssl ca \
--config openssl-ca.cnf \
--revoke ~/pki-labs/web-server/server.crt
+  -config intermediate/openssl-intermediate.cnf \
+  -revoke ~/pki-labs/web-server/server.crt
 ```
 
-OpenSSL registrará la revocación en el archivo `index.txt`.
+OpenSSL registrará la revocación en el archivo `index.txt` de la **intermedia**.
 
 Comprueba el contenido del índice.
 
 ```bash id="1g4r31"
-cat index.txt
+cat intermediate/index.txt
 ```
 
-Debería aparecer una entrada marcada como revocada.
+Debería aparecer una entrada marcada con la letra **R** (revocada).
+
+> **¿Por qué la intermedia y no la raíz?**
+> La revocación debe registrarla la misma CA que emitió el certificado.
+> Si usases `openssl-ca.cnf` (la raíz), la revocación quedaría en el
+> `index.txt` de la raíz, pero la CRL de la intermedia no la reflejaría
+> y la verificación seguiría dando OK.
 
 ---
 
-### Paso 3 — Generar una nueva CRL
+### Paso 3 — Generar una nueva CRL de la intermedia
 
-Después de revocar un certificado es necesario generar una nueva lista de revocación.
+Después de revocar un certificado es necesario generar una nueva lista de revocación
+desde la misma CA que hizo la revocación.
 
 ```bash id="c41rjv"
 openssl ca \
--config openssl-ca.cnf \
--gencrl \
--out crl/ca.crl
+  -config intermediate/openssl-intermediate.cnf \
+  -gencrl \
+  -out intermediate/crl/intermediate.crl
 ```
 
-Esto actualizará la lista de certificados revocados.
+Esto actualizará la CRL de la intermedia con el certificado revocado.
 
 ---
 
 ### Paso 4 — Comprobar el contenido de la CRL
 
-Examina la CRL generada.
+Examina la CRL de la intermedia.
 
 ```bash id="kskz9a"
-openssl crl -in crl/ca.crl -text -noout
+openssl crl -in intermediate/crl/intermediate.crl -text -noout
 ```
 
 Busca la sección:
@@ -106,16 +117,7 @@ Esto indica que el certificado ya no debe considerarse válido.
 
 Cuando usas `-crl_check`, OpenSSL necesita una CRL **de cada CA en la cadena**.
 Como el certificado del servidor fue firmado por la CA intermedia, necesitamos
-la CRL de la intermedia (generada en el ejercicio anterior) además de la de la raíz.
-
-Primero, regenera la CRL de la intermedia para que refleje la revocación que acabamos de hacer:
-
-```bash id="regen-int-crl"
-openssl ca \
-  -config intermediate/openssl-intermediate.cnf \
-  -gencrl \
-  -out intermediate/crl/intermediate.crl
-```
+la CRL de la intermedia (que ya incluye la revocación del paso 3) además de la de la raíz.
 
 Combina ambas CRLs en un solo archivo:
 
