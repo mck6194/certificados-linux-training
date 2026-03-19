@@ -104,14 +104,34 @@ Esto indica que el certificado ya no debe considerarse válido.
 
 ### Paso 5 — Verificar un certificado teniendo en cuenta la CRL
 
-Comprueba el certificado del servidor utilizando la CRL generada.
+Cuando usas `-crl_check`, OpenSSL necesita una CRL **de cada CA en la cadena**.
+Como el certificado del servidor fue firmado por la CA intermedia, necesitamos
+la CRL de la intermedia (generada en el ejercicio anterior) además de la de la raíz.
+
+Primero, regenera la CRL de la intermedia para que refleje la revocación que acabamos de hacer:
+
+```bash id="regen-int-crl"
+openssl ca \
+  -config intermediate/openssl-intermediate.cnf \
+  -gencrl \
+  -out intermediate/crl/intermediate.crl
+```
+
+Combina ambas CRLs en un solo archivo:
+
+```bash id="cat-crls"
+cat crl/ca.crl intermediate/crl/intermediate.crl > crl/full-chain.crl
+```
+
+Ahora verifica el certificado incluyendo la cadena intermedia y la CRL combinada:
 
 ```bash id="p0t3u2"
 openssl verify \
--CAfile ca.crt \
--CRLfile crl/ca.crl \
--crl_check \
-~/pki-labs/web-server/server.crt
+  -CAfile ca.crt \
+  -untrusted intermediate/intermediate.crt \
+  -CRLfile crl/full-chain.crl \
+  -crl_check \
+  ~/pki-labs/web-server/server.crt
 ```
 
 La salida debería indicar algo similar a:
@@ -119,6 +139,14 @@ La salida debería indicar algo similar a:
 ```id="1avlq1"
 certificate revoked
 ```
+
+> **¿Por qué `-untrusted` y dos CRLs?**
+>
+> * `-untrusted` proporciona el certificado de la CA intermedia para
+>   completar la cadena raíz → intermedia → servidor.
+> * `-crl_check` exige una CRL válida del emisor directo del certificado
+>   que se está verificando. Como el servidor fue firmado por la intermedia,
+>   sin su CRL OpenSSL devuelve `unable to get certificate CRL`.
 
 Esto demuestra que el certificado ya no es considerado válido porque ha sido revocado por la autoridad certificadora.
 

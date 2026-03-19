@@ -79,57 +79,97 @@ Esta CRL aún no contiene certificados revocados.
 
 ---
 
-### Paso 3 — Examinar la CRL generada
+### Paso 3 — Generar la CRL de la CA intermedia
 
-Visualiza el contenido de la lista de revocación.
+En nuestra PKI los certificados de servidor fueron firmados por la **CA intermedia**.
+Para poder verificar revocaciones con `-crl_check`, OpenSSL necesita una CRL
+de cada CA en la cadena, así que también necesitamos la CRL de la intermedia.
+
+```bash id="int-crl"
+openssl ca \
+  -config intermediate/openssl-intermediate.cnf \
+  -gencrl \
+  -out intermediate/crl/intermediate.crl
+```
+
+> Si obtienes `cannot lookup how long until the next CRL is due`,
+> añade `default_crl_days = 30` en la sección `[ CA_default ]` de tu
+> `openssl-intermediate.cnf`, igual que hicimos con la CA raíz.
+
+Comprueba que se ha generado:
+
+```bash id="ls-int-crl"
+ls intermediate/crl
+```
+
+Deberías ver:
+
+```id="int-crl-out"
+intermediate.crl
+```
+
+---
+
+### Paso 4 — Examinar las CRL generadas
+
+Visualiza el contenido de la CRL de la CA raíz:
 
 ```bash id="6p4knk"
 openssl crl -in crl/ca.crl -text -noout
 ```
 
-Busca una sección similar a:
+Y la de la CA intermedia:
+
+```bash id="6p4knk-int"
+openssl crl -in intermediate/crl/intermediate.crl -text -noout
+```
+
+Busca en ambas una sección similar a:
 
 ```id="n2pn68"
 No Revoked Certificates
 ```
 
-Esto indica que actualmente ningún certificado ha sido revocado.
+Esto indica que actualmente ningún certificado ha sido revocado en ninguna de las dos CAs.
 
 ---
 
-### Paso 4 — Verificar la firma de la CRL
+### Paso 5 — Verificar la firma de las CRL
 
-Comprueba que la CRL ha sido firmada por la autoridad certificadora.
+Comprueba que cada CRL ha sido firmada por su autoridad certificadora correspondiente.
 
 ```bash id="scopst"
 openssl crl -in crl/ca.crl -noout -issuer
+openssl crl -in intermediate/crl/intermediate.crl -noout -issuer
 ```
 
 La salida debería mostrar algo similar a:
 
 ```id="2d4kxb"
 issuer=CN = Training Root CA
+issuer=CN = Training Intermediate CA
 ```
 
-Esto confirma que la CRL pertenece a la autoridad certificadora que creamos en el laboratorio.
+Esto confirma que cada CRL pertenece a la CA que la emitió.
 
 ---
 
-### Paso 5 — Comprobar la validez temporal de la CRL
+### Paso 6 — Comprobar la validez temporal de las CRL
 
-Muestra las fechas de validez de la lista de revocación.
+Muestra las fechas de validez de ambas listas de revocación.
 
 ```bash id="j3m6u3"
 openssl crl -in crl/ca.crl -noout -nextupdate -lastupdate
+openssl crl -in intermediate/crl/intermediate.crl -noout -nextupdate -lastupdate
 ```
 
 Estas fechas indican:
 
-* cuándo se publicó la CRL
+* cuándo se publicó cada CRL
 * cuándo deberá generarse una nueva versión.
 
 Las CRL deben actualizarse periódicamente para que los clientes puedan comprobar revocaciones recientes.
 
 ---
 
-En este ejercicio hemos generado una lista de revocación utilizando nuestra autoridad certificadora y hemos examinado su contenido y firma.
+En este ejercicio hemos generado listas de revocación tanto de la CA raíz como de la CA intermedia, y hemos examinado su contenido, firma y vigencia.
