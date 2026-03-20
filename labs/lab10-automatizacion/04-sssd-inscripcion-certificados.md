@@ -39,8 +39,8 @@ man sssd.conf
 >
 > Como alternativa, puedes consultar la documentación online:
 >
-> * [man sssd (man7.org)](https://man7.org/linux/man-pages/man8/sssd.8.html)
-> * [man sssd.conf (man7.org)](https://man7.org/linux/man-pages/man5/sssd.conf.5.html)
+> * [man sssd(8)](https://www.mankier.com/8/sssd)
+> * [man sssd.conf(5)](https://www.mankier.com/5/sssd.conf)
 > * [Documentación oficial de SSSD](https://sssd.io/docs/introduction.html)
 
 ---
